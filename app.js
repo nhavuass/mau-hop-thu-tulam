@@ -520,4 +520,4 @@ dismissElements.forEach(element => {
 /* ========================================================= */
 
 kimochi();
-kimochi();
+
