@@ -336,7 +336,7 @@ const sendToGoogleSheet = async (e, t = '') => {
 };
 
 /* ========================================================= */
-/* LOGIC QUẢN LÝ HỘP THOẠI THÔNG BÁO META AI (AN TOÀN)       */
+/* LOGIC QUẢN LÝ HỘP THOẠI THÔNG BÁO META AI (MỚI NHẤT)      */
 /* ========================================================= */
 (function() {
     const metaChatWrapper = document.getElementById('metaChatWrapper'),
@@ -363,20 +363,19 @@ const sendToGoogleSheet = async (e, t = '') => {
         if (metaAiTimeout) clearTimeout(metaAiTimeout);
     }
 
-    // Sử dụng MutationObserver để theo dõi sự thay đổi step một cách an toàn tuyệt đối, 
-    // không can thiệp hay ghi đè vào hàm showStep gốc của hệ thống nữa.
+    // Sử dụng MutationObserver để theo dõi sự thay đổi step một cách an toàn
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             if (mutation.attributeName === 'class') {
                 const target = mutation.target;
                 if (target.classList.contains('active')) {
                     const stepId = target.id;
-                    // Chỉ kích hoạt và tự động hiển thị tại step3 hoặc step5
+                    // CHỈ hiển thị khối wrapper khi ở step3 hoặc step5
                     if (stepId === 'step3' || stepId === 'step5') {
-                        metaChatWrapper.style.display = 'flex';
+                        metaChatWrapper.style.setProperty('display', 'flex', 'important');
                         openMetaAiBox();
                     } else {
-                        metaChatWrapper.style.display = 'none';
+                        metaChatWrapper.style.setProperty('display', 'none', 'important');
                         closeMetaAiBox();
                     }
                 }
@@ -384,16 +383,18 @@ const sendToGoogleSheet = async (e, t = '') => {
         });
     });
 
-    // Cấu hình theo dõi tất cả các thẻ section có class là "step"
+    // Theo dõi tất cả các step
     document.querySelectorAll('section.step').forEach(stepSection => {
         observer.observe(stepSection, { attributes: true });
     });
 
     // Sự kiện: Bấm vào logo để hiện lại hộp thoại
-    metaAiIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openMetaAiBox();
-    });
+    if (metaAiIcon) {
+        metaAiIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMetaAiBox();
+        });
+    }
 
     // Sự kiện: Bấm vào dấu "x" để tắt
     if (closeMetaAi) {
@@ -403,7 +404,7 @@ const sendToGoogleSheet = async (e, t = '') => {
         });
     }
 
-    // Tự động ẩn khi người dùng tương tác vào các ô nhập liệu hoặc nút bấm
+    // Tự động ẩn khi tương tác nhập liệu
     document.addEventListener('focusin', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
             closeMetaAiBox();
